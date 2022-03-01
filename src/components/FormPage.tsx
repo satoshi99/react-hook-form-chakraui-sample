@@ -1,6 +1,7 @@
 import {
   Alert,
   AlertIcon,
+  Box,
   Button,
   Checkbox,
   CheckboxGroup,
@@ -14,6 +15,7 @@ import {
   InputGroup,
   InputLeftAddon,
   InputLeftElement,
+  ListItem,
   Modal,
   ModalBody,
   ModalContent,
@@ -26,6 +28,7 @@ import {
   Stack,
   Text,
   Textarea,
+  UnorderedList,
   useDisclosure,
 } from '@chakra-ui/react'
 import { SubmitHandler, useForm } from 'react-hook-form'
@@ -45,8 +48,7 @@ type FormInputs = {
   adress: string
   birthday: Date
   gender: string
-  options: Array<string>
-  fileUp: File
+  skills: Array<string>
   message: string
   confirm: boolean
 }
@@ -56,13 +58,21 @@ export const FormPage = () => {
     register,
     watch,
     getValues,
-    setValue,
     handleSubmit,
     formState: { errors, isValid, isSubmitting, isSubmitted },
   } = useForm<FormInputs>({
     mode: 'all',
     defaultValues: {
+      name: '',
       contact: 'Email',
+      email: '',
+      phone: '',
+      postalCode: '',
+      prefecture: '',
+      adress: '',
+      gender: '',
+      skills: [],
+      message: '',
       confirm: false,
     },
   })
@@ -77,10 +87,10 @@ export const FormPage = () => {
   const onSubmit: SubmitHandler<FormInputs> = (data) =>
     alert(JSON.stringify(data))
 
-  const genderArray = ['Male', 'Female', 'Diverse']
+  const genderArray = ['Male', 'Female', 'Others']
   const [gender, setGender] = useState('')
 
-  const optionArray = ['option1', 'option2', 'option3', 'option4', 'option5']
+  const optionArray = ['HTML', 'CSS', 'JavaScript', 'Others']
 
   const onClick = () => {
     setValues(getValues())
@@ -149,6 +159,7 @@ export const FormPage = () => {
                     />
                     <Input
                       type="email"
+                      value={watch('email')}
                       placeholder="guest@example.com"
                       {...register('email', {
                         required: {
@@ -176,6 +187,7 @@ export const FormPage = () => {
                     />
                     <Input
                       type="tel"
+                      value={watch('phone')}
                       placeholder="09011223344"
                       {...register('phone', {
                         required: {
@@ -274,29 +286,16 @@ export const FormPage = () => {
             </FormControl>
 
             <FormControl>
-              <FormLabel>Options</FormLabel>
+              <FormLabel>Skills</FormLabel>
               <CheckboxGroup>
-                <Stack direction="row" spacing={10}>
+                <Flex direction="row" columnGap={10} wrap="wrap">
                   {optionArray.map((v, i) => (
-                    <Checkbox key={i} value={v} {...register('options')}>
+                    <Checkbox key={i} value={v} {...register('skills')}>
                       {v}
                     </Checkbox>
                   ))}
-                </Stack>
+                </Flex>
               </CheckboxGroup>
-            </FormControl>
-
-            <FormControl isInvalid={errors.fileUp ? true : false}>
-              <FormLabel>Upload File</FormLabel>
-              <Input
-                type="file"
-                variant="unstyled"
-                pl="2"
-                {...register('fileUp')}
-              />
-              <FormErrorMessage>
-                {errors.fileUp && errors.fileUp.message}
-              </FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={errors.message ? true : false}>
@@ -310,7 +309,6 @@ export const FormPage = () => {
             <FormControl isRequired isInvalid={errors.confirm ? true : false}>
               <Flex direction="row" gap={2}>
                 <Checkbox
-                  defaultChecked={false}
                   {...register('confirm', {
                     required: {
                       value: true,
@@ -352,9 +350,69 @@ export const FormPage = () => {
               <ModalHeader>Confirm your input</ModalHeader>
               <ModalBody>
                 <Stack direction="column">
-                  <Text>{values?.name}</Text>
-                  <Text>{values?.email}</Text>
-                  <Text>{values?.adress}</Text>
+                  <Box>
+                    <Text color="gray">Name</Text>
+                    <Divider />
+                    <Text>{values?.name}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">
+                      {values?.contact === 'Email' ? 'Email' : 'Phone number'}
+                    </Text>
+                    <Divider />
+                    <Text>
+                      {values?.contact === 'Email'
+                        ? values?.email
+                        : values?.phone}
+                    </Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Postal Code</Text>
+                    <Divider />
+                    <Text>{values?.postalCode}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Prefecture</Text>
+                    <Divider />
+                    <Text>{values?.prefecture}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Adress</Text>
+                    <Divider />
+                    <Text>{values?.adress}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Date of birth</Text>
+                    <Divider />
+                    <Text>{values?.birthday}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Gender</Text>
+                    <Divider />
+                    <Text>{values?.gender}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Skills</Text>
+                    <Divider />
+                    <UnorderedList>
+                      {values?.skills?.map((v, i) => (
+                        <ListItem key={i}>{v}</ListItem>
+                      ))}
+                    </UnorderedList>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Message</Text>
+                    <Divider />
+                    <Text>{values?.message}</Text>
+                  </Box>
                 </Stack>
               </ModalBody>
               <ModalFooter>
