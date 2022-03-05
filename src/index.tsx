@@ -4,14 +4,12 @@ import ReactDOM from 'react-dom'
 import { App } from './App'
 import reportWebVitals from './reportWebVitals'
 import * as serviceWorker from './serviceWorker'
-import { FormPage } from './components/FormPage'
-// import theme from './theme'
 
 ReactDOM.render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
       <ColorModeScript />
-      <FormPage />
+      <App />
     </ChakraProvider>
   </React.StrictMode>,
   document.getElementById('root')

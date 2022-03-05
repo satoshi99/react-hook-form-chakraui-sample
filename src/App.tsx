@@ -1,36 +1,471 @@
-import * as React from 'react'
 import {
-  ChakraProvider,
   Box,
+  Button,
+  Checkbox,
+  CheckboxGroup,
+  Divider,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input,
+  InputGroup,
+  InputLeftAddon,
+  InputLeftElement,
+  ListItem,
+  Modal,
+  ModalBody,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Radio,
+  RadioGroup,
+  Select,
+  Stack,
   Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
+  Textarea,
+  UnorderedList,
+  useDisclosure,
+  useToast,
 } from '@chakra-ui/react'
+import { SubmitHandler, useForm } from 'react-hook-form'
 import { ColorModeSwitcher } from './ColorModeSwitcher'
-import { Logo } from './Logo'
-import { useForm } from 'react-hook-form'
+import { PREFECTURES } from './const'
+import { useState } from 'react'
+import 'react-datepicker/dist/react-datepicker.css'
+import { HiOutlineMail, HiOutlinePhone } from 'react-icons/hi'
 
-export const App = () => (
-  <Box textAlign="center" fontSize="xl">
-    <Grid minH="100vh" p={3}>
-      <ColorModeSwitcher justifySelf="flex-end" />
-      <VStack spacing={8}>
-        <Logo h="40vmin" pointerEvents="none" />
-        <Text>
-          Edit <Code fontSize="xl">src/App.tsx</Code> and save to reload.
-        </Text>
-        <Link
-          color="teal.500"
-          href="https://chakra-ui.com"
-          fontSize="2xl"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn Chakra
-        </Link>
-      </VStack>
-    </Grid>
-  </Box>
-)
+export type FormInputs = {
+  name: string
+  contact: 'Email' | 'Phone'
+  email: string
+  phone: string
+  postalCode: string
+  prefecture: string
+  adress: string
+  birthday: Date
+  gender: string
+  skills: Array<string>
+  message: string
+  confirm: boolean
+}
+
+export const App = () => {
+  // useForm
+  const {
+    register,
+    watch,
+    getValues,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid, isSubmitting },
+  } = useForm<FormInputs>({
+    mode: 'all',
+    defaultValues: {
+      name: '',
+      contact: 'Email',
+      email: '',
+      phone: '',
+      postalCode: '',
+      prefecture: '',
+      adress: '',
+      gender: '',
+      skills: [],
+      message: '',
+      confirm: false,
+    },
+  })
+
+  // State of all input values
+  const [values, setValues] = useState<FormInputs>()
+
+  // Contact options
+  const contactArray = ['Email', 'Phone']
+  const contact = watch('contact')
+
+  // Gender options
+  const genderArray = ['Male', 'Female', 'Others']
+  const gender = watch('gender')
+
+  // Skill options
+  const skillArray = ['HTML', 'CSS', 'JavaScript', 'Others']
+  const skills = watch('skills')
+
+  // Modal
+  const { isOpen, onOpen, onClose } = useDisclosure()
+
+  // Toast
+  const toast = useToast()
+  const toastHandler = () => {
+    toast({
+      title: 'Successfully Submitted',
+      status: 'success',
+      position: 'top-left',
+      duration: 9000,
+      isClosable: true,
+    })
+  }
+
+  // The Confirm button's click event
+  const onClick = () => {
+    setValues(getValues())
+    onOpen()
+  }
+
+  // Submit handler
+  const onSubmit: SubmitHandler<FormInputs> = (data) => {
+    try {
+      console.log(JSON.stringify(data))
+    } catch (e) {
+      console.log(e)
+    }
+
+    reset()
+    onClose()
+    window.scrollTo({ top: 0, behavior: 'auto' })
+    toastHandler()
+  }
+
+  return (
+    <>
+      <ColorModeSwitcher />
+      <Flex
+        direction="column"
+        px={{ base: '16', md: '28', lg: '36' }}
+        pt="10"
+        pb="24"
+      >
+        <Heading textAlign="center">Form Example</Heading>
+        <Divider my="10" />
+        <form noValidate id="sumpleForm">
+          <Stack direction="column" spacing={5}>
+            <FormControl isRequired isInvalid={errors.name ? true : false}>
+              <FormLabel>Name</FormLabel>
+              <Input
+                type="text"
+                placeholder="name"
+                {...register('name', {
+                  required: { value: true, message: 'Name is requried' },
+                })}
+              />
+              <FormErrorMessage>
+                {errors.name && errors.name.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl isRequired isInvalid={errors.contact ? true : false}>
+              <FormLabel>Contact</FormLabel>
+              <RadioGroup value={contact} mb={3}>
+                <Stack direction="row" spacing={10}>
+                  {contactArray.map((v, i) => (
+                    <Radio
+                      key={i}
+                      value={v}
+                      isChecked={contact ? v === contact : v === 'Email'}
+                      {...register('contact', {
+                        required: {
+                          value: true,
+                          message: 'Contact is required',
+                        },
+                      })}
+                    >
+                      {v}
+                    </Radio>
+                  ))}
+                </Stack>
+              </RadioGroup>
+              {contact === 'Email' ? (
+                <FormControl isRequired isInvalid={errors.email ? true : false}>
+                  <InputGroup>
+                    <InputLeftElement
+                      pointerEvents="none"
+                      children={<HiOutlineMail />}
+                    />
+                    <Input
+                      type="email"
+                      value={watch('email')}
+                      placeholder="guest@example.com"
+                      {...register('email', {
+                        required: {
+                          value: true,
+                          message: 'Email or Phone number is requried',
+                        },
+                        pattern: {
+                          value:
+                            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                          message: 'Invalid Email adress',
+                        },
+                      })}
+                    />
+                  </InputGroup>
+                  <FormErrorMessage>
+                    {errors.email && errors.email.message}
+                  </FormErrorMessage>
+                </FormControl>
+              ) : (
+                <FormControl isRequired isInvalid={errors.phone ? true : false}>
+                  <InputGroup>
+                    <InputLeftElement
+                      pointerEvents="none"
+                      children={<HiOutlinePhone />}
+                    />
+                    <Input
+                      type="tel"
+                      value={watch('phone')}
+                      placeholder="09011223344"
+                      {...register('phone', {
+                        required: {
+                          value: true,
+                          message: 'Email or Phone number is requried',
+                        },
+                        pattern: {
+                          value: /[0-9]{10,11}/,
+                          message: 'Phone number must be 10 or 11 digits',
+                        },
+                      })}
+                      maxLength={11}
+                    />
+                  </InputGroup>
+                  <FormErrorMessage>
+                    {errors.phone && errors.phone.message}
+                  </FormErrorMessage>
+                </FormControl>
+              )}
+            </FormControl>
+
+            <FormControl isInvalid={errors.postalCode ? true : false}>
+              <FormLabel>Postal Code</FormLabel>
+              <InputGroup>
+                <InputLeftAddon children="〒" />
+                <Input
+                  type="tel"
+                  placeholder="1238899"
+                  {...register('postalCode', {
+                    pattern: {
+                      value: /[0-9]{7}/,
+                      message: 'Postal code is a number with 7 characters',
+                    },
+                  })}
+                  maxLength={7}
+                />
+              </InputGroup>
+              <FormErrorMessage>
+                {errors.postalCode && errors.postalCode.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.prefecture ? true : false}>
+              <FormLabel>Prefecture</FormLabel>
+              <Select
+                placeholder="Chose your Prefecture"
+                {...register('prefecture')}
+              >
+                {PREFECTURES.map((v, i) => (
+                  <option key={i} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </Select>
+              <FormErrorMessage>
+                {errors.prefecture && errors.prefecture.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.adress ? true : false}>
+              <FormLabel>Adress</FormLabel>
+              <Input
+                type="text"
+                placeholder="Shibuya, Shibuya-ku, Tokyo"
+                {...register('adress')}
+              />
+              <FormErrorMessage>
+                {errors.adress && errors.adress.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.birthday ? true : false}>
+              <FormLabel>Date of Birth</FormLabel>
+              <Input type="date" {...register('birthday')} />
+              <FormErrorMessage>
+                {errors.birthday && errors.birthday.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Gender</FormLabel>
+              <RadioGroup value={gender}>
+                <Stack direction="row" spacing={10}>
+                  {genderArray.map((v, i) => (
+                    <Radio
+                      key={i}
+                      value={v}
+                      isChecked={v === gender}
+                      {...register('gender')}
+                    >
+                      {v}
+                    </Radio>
+                  ))}
+                </Stack>
+              </RadioGroup>
+            </FormControl>
+
+            <FormControl>
+              <FormLabel>Skills</FormLabel>
+              <CheckboxGroup value={skills}>
+                <Flex direction="row" columnGap={10} wrap="wrap">
+                  {skillArray.map((v, i) => (
+                    <Checkbox
+                      key={i}
+                      value={v}
+                      isChecked={skills.includes(v)}
+                      {...register('skills')}
+                    >
+                      {v}
+                    </Checkbox>
+                  ))}
+                </Flex>
+              </CheckboxGroup>
+            </FormControl>
+
+            <FormControl isInvalid={errors.message ? true : false}>
+              <FormLabel>Message</FormLabel>
+              <Textarea
+                placeholder="Contact message..."
+                {...register('message')}
+              />
+            </FormControl>
+
+            <FormControl isRequired isInvalid={errors.confirm ? true : false}>
+              <Flex direction="row" gap={2}>
+                <Checkbox
+                  defaultChecked={false}
+                  isChecked={watch('confirm')}
+                  {...register('confirm', {
+                    required: {
+                      value: true,
+                      message: 'You must confirm the Privacy Policy',
+                    },
+                  })}
+                />
+                <FormLabel mt="2">
+                  Please check if you agree with Privacy Policy
+                </FormLabel>
+              </Flex>
+              <FormErrorMessage>
+                {errors.confirm && errors.confirm.message}
+              </FormErrorMessage>
+            </FormControl>
+            <Button
+              type="button"
+              w="100%"
+              colorScheme="teal"
+              disabled={!isValid}
+              onClick={onClick}
+            >
+              CONFIRM
+            </Button>
+          </Stack>
+
+          <Modal
+            isCentered
+            onClose={onClose}
+            isOpen={isOpen}
+            scrollBehavior="inside"
+            size="xl"
+          >
+            <ModalOverlay
+              bg="blackAlpha.300"
+              backdropFilter="blur(10px) hue-rotate(90deg)"
+            />
+            <ModalContent>
+              <ModalHeader>Confirm your input</ModalHeader>
+              <ModalBody>
+                <Stack direction="column">
+                  <Box>
+                    <Text color="gray">Name</Text>
+                    <Divider />
+                    <Text>{values?.name}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">
+                      {values?.contact === 'Email' ? 'Email' : 'Phone number'}
+                    </Text>
+                    <Divider />
+                    <Text>
+                      {values?.contact === 'Email'
+                        ? values?.email
+                        : values?.phone}
+                    </Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Postal Code</Text>
+                    <Divider />
+                    <Text>{values?.postalCode}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Prefecture</Text>
+                    <Divider />
+                    <Text>{values?.prefecture}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Adress</Text>
+                    <Divider />
+                    <Text>{values?.adress}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Date of birth</Text>
+                    <Divider />
+                    <Text>{values?.birthday}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Gender</Text>
+                    <Divider />
+                    <Text>{values?.gender}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Skills</Text>
+                    <Divider />
+                    <UnorderedList>
+                      {values?.skills?.map((v, i) => (
+                        <ListItem key={i}>{v}</ListItem>
+                      ))}
+                    </UnorderedList>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Message</Text>
+                    <Divider />
+                    <Text>{values?.message}</Text>
+                  </Box>
+                </Stack>
+              </ModalBody>
+              <ModalFooter>
+                <Button type="button" onClick={onClose} mr={3}>
+                  REVISE
+                </Button>
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  <Button
+                    type="submit"
+                    colorScheme="teal"
+                    isLoading={isSubmitting}
+                  >
+                    SUBMIT
+                  </Button>
+                </form>
+              </ModalFooter>
+            </ModalContent>
+          </Modal>
+        </form>
+      </Flex>
+    </>
+  )
+}
