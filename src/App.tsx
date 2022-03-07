@@ -28,18 +28,15 @@ import {
   Textarea,
   UnorderedList,
   useDisclosure,
-  useToast,
 } from '@chakra-ui/react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { ColorModeSwitcher } from './ColorModeSwitcher'
 import { PREFECTURES } from './const'
 import { useState } from 'react'
-import 'react-datepicker/dist/react-datepicker.css'
 import { HiOutlineMail, HiOutlinePhone } from 'react-icons/hi'
 
 export type FormInputs = {
   name: string
-  contact: 'Email' | 'Phone'
   email: string
   phone: string
   postalCode: string
@@ -56,16 +53,13 @@ export const App = () => {
   // useForm
   const {
     register,
-    watch,
     getValues,
     handleSubmit,
-    reset,
     formState: { errors, isValid, isSubmitting },
   } = useForm<FormInputs>({
     mode: 'all',
     defaultValues: {
       name: '',
-      contact: 'Email',
       email: '',
       phone: '',
       postalCode: '',
@@ -81,32 +75,14 @@ export const App = () => {
   // State of all input values
   const [values, setValues] = useState<FormInputs>()
 
-  // Contact options
-  const contactArray = ['Email', 'Phone']
-  const contact = watch('contact')
-
   // Gender options
   const genderArray = ['Male', 'Female', 'Others']
-  const gender = watch('gender')
 
   // Skill options
   const skillArray = ['HTML', 'CSS', 'JavaScript', 'Others']
-  const skills = watch('skills')
 
   // Modal
   const { isOpen, onOpen, onClose } = useDisclosure()
-
-  // Toast
-  const toast = useToast()
-  const toastHandler = () => {
-    toast({
-      title: 'Successfully Submitted',
-      status: 'success',
-      position: 'top-left',
-      duration: 9000,
-      isClosable: true,
-    })
-  }
 
   // The Confirm button's click event
   const onClick = () => {
@@ -121,11 +97,6 @@ export const App = () => {
     } catch (e) {
       console.log(e)
     }
-
-    reset()
-    onClose()
-    window.scrollTo({ top: 0, behavior: 'auto' })
-    toastHandler()
   }
 
   return (
@@ -155,83 +126,55 @@ export const App = () => {
               </FormErrorMessage>
             </FormControl>
 
-            <FormControl isRequired isInvalid={errors.contact ? true : false}>
-              <FormLabel>Contact</FormLabel>
-              <RadioGroup value={contact} mb={3}>
-                <Stack direction="row" spacing={10}>
-                  {contactArray.map((v, i) => (
-                    <Radio
-                      key={i}
-                      value={v}
-                      isChecked={contact ? v === contact : v === 'Email'}
-                      {...register('contact', {
-                        required: {
-                          value: true,
-                          message: 'Contact is required',
-                        },
-                      })}
-                    >
-                      {v}
-                    </Radio>
-                  ))}
-                </Stack>
-              </RadioGroup>
-              {contact === 'Email' ? (
-                <FormControl isRequired isInvalid={errors.email ? true : false}>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      children={<HiOutlineMail />}
-                    />
-                    <Input
-                      type="email"
-                      value={watch('email')}
-                      placeholder="guest@example.com"
-                      {...register('email', {
-                        required: {
-                          value: true,
-                          message: 'Email or Phone number is requried',
-                        },
-                        pattern: {
-                          value: /[\w\-._]+@[\w\-._]+\.[A-Za-z]+/,
-                          message: 'Invalid Email adress',
-                        },
-                      })}
-                    />
-                  </InputGroup>
-                  <FormErrorMessage>
-                    {errors.email && errors.email.message}
-                  </FormErrorMessage>
-                </FormControl>
-              ) : (
-                <FormControl isRequired isInvalid={errors.phone ? true : false}>
-                  <InputGroup>
-                    <InputLeftElement
-                      pointerEvents="none"
-                      children={<HiOutlinePhone />}
-                    />
-                    <Input
-                      type="tel"
-                      value={watch('phone')}
-                      placeholder="09011223344"
-                      {...register('phone', {
-                        required: {
-                          value: true,
-                          message: 'Email or Phone number is requried',
-                        },
-                        pattern: {
-                          value: /[0-9]{10,11}/,
-                          message: 'Phone number must be 10 or 11 digits',
-                        },
-                      })}
-                      maxLength={11}
-                    />
-                  </InputGroup>
-                  <FormErrorMessage>
-                    {errors.phone && errors.phone.message}
-                  </FormErrorMessage>
-                </FormControl>
-              )}
+            <FormControl isRequired isInvalid={errors.email ? true : false}>
+              <FormLabel>Email</FormLabel>
+              <InputGroup>
+                <InputLeftElement
+                  pointerEvents="none"
+                  children={<HiOutlineMail />}
+                />
+                <Input
+                  type="email"
+                  placeholder="guest@example.com"
+                  {...register('email', {
+                    required: {
+                      value: true,
+                      message: 'Email is requried',
+                    },
+                    pattern: {
+                      value: /[\w\-._]+@[\w\-._]+\.[A-Za-z]+/,
+                      message: 'Invalid Email adress',
+                    },
+                  })}
+                />
+              </InputGroup>
+              <FormErrorMessage>
+                {errors.email && errors.email.message}
+              </FormErrorMessage>
+            </FormControl>
+
+            <FormControl isInvalid={errors.phone ? true : false}>
+              <FormLabel>Phone Number</FormLabel>
+              <InputGroup>
+                <InputLeftElement
+                  pointerEvents="none"
+                  children={<HiOutlinePhone />}
+                />
+                <Input
+                  type="tel"
+                  placeholder="09011223344"
+                  {...register('phone', {
+                    pattern: {
+                      value: /[0-9]{10,11}/,
+                      message: 'Phone number must be 10 or 11 digits',
+                    },
+                  })}
+                  maxLength={11}
+                />
+              </InputGroup>
+              <FormErrorMessage>
+                {errors.phone && errors.phone.message}
+              </FormErrorMessage>
             </FormControl>
 
             <FormControl isInvalid={errors.postalCode ? true : false}>
@@ -294,15 +237,10 @@ export const App = () => {
 
             <FormControl>
               <FormLabel>Gender</FormLabel>
-              <RadioGroup value={gender}>
+              <RadioGroup>
                 <Stack direction="row" spacing={10}>
                   {genderArray.map((v, i) => (
-                    <Radio
-                      key={i}
-                      value={v}
-                      isChecked={v === gender}
-                      {...register('gender')}
-                    >
+                    <Radio key={i} value={v} {...register('gender')}>
                       {v}
                     </Radio>
                   ))}
@@ -312,15 +250,10 @@ export const App = () => {
 
             <FormControl>
               <FormLabel>Skills</FormLabel>
-              <CheckboxGroup value={skills}>
+              <CheckboxGroup>
                 <Flex direction="row" columnGap={10} wrap="wrap">
                   {skillArray.map((v, i) => (
-                    <Checkbox
-                      key={i}
-                      value={v}
-                      isChecked={skills.includes(v)}
-                      {...register('skills')}
-                    >
+                    <Checkbox key={i} value={v} {...register('skills')}>
                       {v}
                     </Checkbox>
                   ))}
@@ -340,7 +273,6 @@ export const App = () => {
               <Flex direction="row" gap={2}>
                 <Checkbox
                   defaultChecked={false}
-                  isChecked={watch('confirm')}
                   {...register('confirm', {
                     required: {
                       value: true,
@@ -367,6 +299,7 @@ export const App = () => {
             </Button>
           </Stack>
 
+          {/* Confirmation Modal */}
           <Modal
             isCentered
             onClose={onClose}
@@ -389,15 +322,15 @@ export const App = () => {
                   </Box>
 
                   <Box>
-                    <Text color="gray">
-                      {values?.contact === 'Email' ? 'Email' : 'Phone number'}
-                    </Text>
+                    <Text color="gray">Email</Text>
                     <Divider />
-                    <Text>
-                      {values?.contact === 'Email'
-                        ? values?.email
-                        : values?.phone}
-                    </Text>
+                    <Text>{values?.email}</Text>
+                  </Box>
+
+                  <Box>
+                    <Text color="gray">Phone</Text>
+                    <Divider />
+                    <Text>{values?.phone}</Text>
                   </Box>
 
                   <Box>
@@ -451,7 +384,7 @@ export const App = () => {
                 <Button type="button" onClick={onClose} mr={3}>
                   REVISE
                 </Button>
-                <form onSubmit={handleSubmit(onSubmit)}>
+                <form id="form" onSubmit={handleSubmit(onSubmit)}>
                   <Button
                     type="submit"
                     colorScheme="teal"
